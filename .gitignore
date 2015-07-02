@@ -1,4 +1,6 @@
 db.sqlite3
+appconf.ini
+client_secrets.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
