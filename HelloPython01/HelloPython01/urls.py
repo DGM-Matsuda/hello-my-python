@@ -20,5 +20,7 @@ from HelloPython01 import views
 urlpatterns = [
     url(r'^$', views.home),
     url(r'^plus$', views.plus),
+    url(r'^login$', views.login),
     url(r'^admin/', include(admin.site.urls)),
 ]
+

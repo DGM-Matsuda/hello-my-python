@@ -1,3 +1,4 @@
+from django.views.decorators.csrf import csrf_exempt
 
 __author__ = 'koichi.matsuda'
 
@@ -7,18 +8,28 @@ import httplib2
 import configparser
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from pprint import pprint
 
 
 def home(request):
 
+    if request.session.get('gplus_id', None) is not None:
+        # Logged in
+        return HttpResponse(request.session['gplus_id'])
+    else:
+        # Not logged in
+        # redirect to login page
+        return redirect('/login')
+
+
+def login(request):
     config = configparser.ConfigParser()
     config.read('appconf.ini')
-
     return render(request, 'base.html', {'gid': config['DEFAULT']['GoogleClientID']})
 
 
+@csrf_exempt
 def plus(request):
 
     gplus_id = ""
@@ -72,6 +83,6 @@ def plus(request):
         return response
     # アクセス トークンを後で使用するためにセッションで保存します。
     # request.session['credentials'] = credentials
-    request.session['gplus_id'] = gplus_id
+    request.session['gplus_id'] = result['user_id']
     response = HttpResponse(json.dumps('Successfully connected user.'), 200)
     return response
