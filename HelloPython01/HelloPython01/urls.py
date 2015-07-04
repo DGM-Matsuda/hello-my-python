@@ -16,8 +16,10 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from HelloPython01 import views
+from HelloPython02.views import HelloWorld
 
 urlpatterns = [
+    url(r'^hello02$', HelloWorld.as_view()),
     url(r'^$', views.home),
     url(r'^plus$', views.plus),
     url(r'^login$', views.login),
