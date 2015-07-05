@@ -17,12 +17,15 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from HelloPython01 import views
 from HelloPython02.views import HelloWorld
+from django.views.generic import TemplateView
 
 urlpatterns = [
+    url(r'^hello02tmp$', TemplateView.as_view(template_name='HelloPython02/index.html')),
     url(r'^hello02$', HelloWorld.as_view()),
     url(r'^$', views.home),
     url(r'^plus$', views.plus),
     url(r'^login$', views.login),
     url(r'^admin/', include(admin.site.urls)),
+    # url(r'^.+$', views.home),
 ]
 
