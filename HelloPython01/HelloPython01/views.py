@@ -16,7 +16,7 @@ def home(request):
 
     if request.session.get('gplus_id', None) is not None:
         # Logged in
-        return HttpResponse(request.session['gplus_id'])
+        return render(request, 'base.html', {'gplus_id': request.session.get('gplus_id')})
     else:
         # Not logged in
         # redirect to login page
@@ -26,7 +26,7 @@ def home(request):
 def login(request):
     config = configparser.ConfigParser()
     config.read('appconf.ini')
-    return render(request, 'base.html', {'gid': config['DEFAULT']['GoogleClientID']})
+    return render(request, 'login.html', {'gid': config['DEFAULT']['GoogleClientID']})
 
 
 @csrf_exempt
