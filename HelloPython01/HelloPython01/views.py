@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.views.decorators.csrf import csrf_exempt
 
 __author__ = 'koichi.matsuda'

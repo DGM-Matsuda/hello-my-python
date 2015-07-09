@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block afterbody %}
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+{% endblock %}
+{% block content %}
+    ログイン画面<br>
+    <span id="signinButton">
+        <span
+          class="g-signin"
+          data-callback="signinCallback"
+          data-clientid="926543091289-m73tg07na7ic25i7cqoa457m47hbcphu.apps.googleusercontent.com"
+          data-cookiepolicy="single_host_origin"
+          data-requestvisibleactions="http://schemas.google.com/AddActivity"
+          data-scope="https://www.googleapis.com/auth/plus.login">
+        </span>
+    </span>
+    <span>
+    <button id="revokeButton">ログアウト</button>
+    </span>
+{% endblock %}
+
+{% block beforEndBody %}
+    <script type="text/javascript">
+
+    document.getElementById('signinButton').setAttribute('style', 'display: none');
+    document.getElementById('revokeButton').setAttribute('style', 'display: none');
+    // using jQuery
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|POST|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    function sameOrigin(url) {
+        // test that a given url is a same-origin URL
+        // url could be relative or scheme relative or absolute
+        var host = document.location.host; // host + port
+        var protocol = document.location.protocol;
+        var sr_origin = '//' + host;
+        var origin = protocol + sr_origin;
+        // Allow absolute or scheme relative URLs to same origin
+        return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+                (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+                    // or any other URL that isn't scheme relative or absolute i.e relative.
+                !(/^(\/\/|http:|https:).*/.test(url));
+    }
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                // Send the token to same-origin, relative URLs only.
+                // Send the token only if the method warrants CSRF protection
+                // Using the CSRFToken value acquired earlier
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    function signinCallback(authResult) {
+        if (authResult['access_token']) {
+            // 正常に承認されました
+            // ユーザーが認証されたのでログイン ボタンを非表示にします。例:
+            document.getElementById('signinButton').setAttribute('style', 'display: none');
+            document.getElementById('revokeButton').setAttribute('style', 'display: visible');
+
+            // コードをサーバーに送信します
+            $.ajax({
+                type: 'POST',
+                url: 'googleplus?storeToken',
+                contentType: 'application/octet-stream; charset=utf-8',
+                success: function(result) {
+                    // 必要に応じてサーバーの応答を処理または検証します。
+
+                    // ユーザーがアプリへの公開を許可したメンバーのリストを
+                    // コンソールに表示します。
+                    console.log(result);
+                    if (result['profile'] && result['people']){
+                        $('#results').html('Hello ' + result['profile']['displayName'] + '. You successfully made a server side call to people.get and people.list');
+                    } else {
+                        $('#results').html('Failed to make a server-side call. Check your configuration and console.');
+                    }
+                },
+                processData: false,
+                data: authResult['code']
+            });
+
+        } else if (authResult['error']) {
+            // エラーが発生しました。
+            // 可能性のあるエラー コード:
+            //   「access_denied」 - ユーザーがアプリへのアクセスを拒否しました
+            //   「immediate_failed」 - ユーザーを自動的にログインできませんでした
+            // console.log（「There was an error: 」 + authResult[「エラー」]）;
+            document.getElementById('signinButton').setAttribute('style', 'display: visible');
+            document.getElementById('revokeButton').setAttribute('style', 'display: none');
+        }
+    }
+    function disconnectUser(access_token) {
+        var revokeUrl = 'https://accounts.google.com/o/oauth2/revoke?token=' +
+                access_token;
+
+        // 非同期 GET リクエストを実行します。
+        $.ajax({
+            type: 'GET',
+            url: revokeUrl,
+            async: false,
+            contentType: "application/json",
+            dataType: 'jsonp',
+            success: function(nullResponse) {
+                // ユーザーが切断されたので何かを行います。
+                // 応答は常に未定義です。
+                document.getElementById('signinButton').setAttribute('style', 'display: visible');
+                document.getElementById('revokeButton').setAttribute('style', 'display: none');
+            },
+            error: function(e) {
+                // エラー console.log(e);
+                // を処理します
+                // 失敗した場合は、ユーザーに手動で切断させることができます
+                // https://plus.google.com/apps
+                document.getElementById('signinButton').setAttribute('style', 'display: none');
+                document.getElementById('revokeButton').setAttribute('style', 'display: visible');
+            }
+        });
+    }
+    // ボタン クリックで切断をトリガーできました
+    $('#revokeButton').click(disconnectUser);
+
+
+    </script>
+{% endblock %}
