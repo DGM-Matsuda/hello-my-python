@@ -15,12 +15,13 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.views.decorators.csrf import csrf_exempt
 from Cognito.views.GoogleAuthAjax import GoogleAuthAjax
+from Login.views.LogoutView import LogoutView
 from Login.views.LoginView import LoginView
 
 urlpatterns = [
     url(r'login/$', LoginView.as_view()),
+    url(r'logout/$', LogoutView.as_view()),
     url(r'login/googleplus', GoogleAuthAjax.as_view()),
     url(r'^admin/', include(admin.site.urls)),
 ]

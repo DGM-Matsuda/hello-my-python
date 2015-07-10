@@ -62,3 +62,5 @@ target/
 .idea/*
 *.iml
 .idea/hello-my-python.iml
+
+HelloPython01/s3/userdata/23XKCTZHGDHS.json
